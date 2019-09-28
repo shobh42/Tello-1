@@ -27,7 +27,6 @@ public class Flier {
         byte[] bytesReceived;
         DatagramPacket datagramPacket;
 
-        String reply = null;
         bytesToSent = request.getBytes(StandardCharsets.UTF_8);
         datagramPacket = new DatagramPacket(bytesToSent, bytesToSent.length, droneAddress, dronePort);
         udpClient.send(datagramPacket);
@@ -42,7 +41,7 @@ public class Flier {
             throw new SocketTimeoutException(ex.getMessage());
         }
 
-        reply = new String(bytesReceived, 0, datagramPacket.getLength(), StandardCharsets.UTF_8);
+        String reply = new String(bytesReceived, 0, datagramPacket.getLength(), StandardCharsets.UTF_8);
         System.out.println("Receive " + reply);
         //System.out.println(String.format("Received %d bytes", datagramPacket.getLength()));
         if (!reply.equals("ok"))

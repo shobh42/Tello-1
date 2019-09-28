@@ -40,6 +40,7 @@ public class Driver {
             }
         }
 
+
         if(isConnected){
             System.out.println("Enter the message");
             String message = sc.nextLine();
