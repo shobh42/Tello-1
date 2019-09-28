@@ -7,26 +7,48 @@ public class Driver {
     public static void main(String[] args) throws Exception {
 
         Scanner sc = new Scanner(System.in);
-        System.out.println("Enter the drone ip address");
-        String ip = sc.nextLine();
+        int maxRetry = 3;
+        boolean isConnected = false;
+        Flier flier = null;
 
-        System.out.println("Enter the port number");
-        String port = sc.nextLine();
+        while(maxRetry != 0){
+            try{
+                System.out.println("Enter the drone ip address");
+                String ip = sc.nextLine();
 
-        System.out.println("Enter the number of missions");
-        String numberOfMission = sc.nextLine();
+                System.out.println("Enter the port number");
+                String port = sc.nextLine();
 
-        Flier flier = new Flier(ip, port, numberOfMission);
+                System.out.println("Enter the number of missions");
+                String numberOfMission = sc.nextLine();
+                flier = new Flier(ip, port, numberOfMission);
 
-        //-------- Put drone in command mode ---------
+                System.out.println("Connecting to drone at " + ip + ":" + port);
+                //-------- Put drone in command mode ---------
+                isConnected = flier.executeCommand("command");
+                System.out.println("Connected to drone");
+                break;
+            }catch (Exception ex){
+                System.out.println("Not connected: " + ex.getMessage());
+            }
 
-        System.out.println("Connecting to drone at " + ip + ":" + port);
+            System.out.println("Number of Retry left: " + --maxRetry);
+            System.out.println("Do you want to continue: Y/N");
+            String response = sc.nextLine();
+            if(response.equals("n") || response.equals("N") ){
+                break;
+            }
+        }
 
+        if(isConnected){
+            System.out.println("Enter the message");
+            String message = sc.nextLine();
+            try{
+                flier.executeCommand(message);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
 
-
-
-
-
-
+        }
     }
 }

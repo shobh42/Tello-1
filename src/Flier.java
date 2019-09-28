@@ -21,43 +21,32 @@ public class Flier {
         udpClient.setSoTimeout(1000);
     }
 
-    public boolean executeCommande(String message) throws IOException {
+    public boolean executeCommand(String message) throws Exception {
         String request = message;
         byte[] bytesToSent;
         byte[] bytesReceived;
         DatagramPacket datagramPacket;
 
         String reply = null;
-        int maxRetries = 3;
-        while (maxRetries > 0) {
+        bytesToSent = request.getBytes(StandardCharsets.UTF_8);
+        datagramPacket = new DatagramPacket(bytesToSent, bytesToSent.length, droneAddress, dronePort);
+        udpClient.send(datagramPacket);
+        System.out.println("Sent " + request + " bytes to " + droneAddress.toString() + ":" + dronePort);
 
-            bytesToSent = request.getBytes(StandardCharsets.UTF_8);
-            datagramPacket = new DatagramPacket(bytesToSent, bytesToSent.length, droneAddress, dronePort);
-            udpClient.send(datagramPacket);
-            System.out.println("Sent " + request + " bytes to " + droneAddress.toString() + ":" + dronePort);
-
-            bytesReceived = new byte[64];
-            datagramPacket = new DatagramPacket(bytesReceived, 64);
-            try {
-                udpClient.receive(datagramPacket);
-            }
-            catch (SocketTimeoutException ex) {
-                datagramPacket = null;
-            }
-            if (datagramPacket != null) {
-                System.out.println(String.format("Received %d bytes", datagramPacket.getLength()));
-                reply = new String(bytesReceived, 0, datagramPacket.getLength(), StandardCharsets.UTF_8);
-                System.out.println("Receive " + reply);
-                if (reply.equals("ok")) {
-                    break;
-                }
-            }
-            System.out.println("Remaining retries: " + maxRetries);
-            maxRetries--;
+        bytesReceived = new byte[64];
+        datagramPacket = new DatagramPacket(bytesReceived, 64);
+        try {
+            udpClient.receive(datagramPacket);
+        }
+        catch (SocketTimeoutException ex) {
+            throw new SocketTimeoutException(ex.getMessage());
         }
 
-        if (reply == null || !reply.equals("ok"))
-            return false;
+        reply = new String(bytesReceived, 0, datagramPacket.getLength(), StandardCharsets.UTF_8);
+        System.out.println("Receive " + reply);
+        //System.out.println(String.format("Received %d bytes", datagramPacket.getLength()));
+        if (!reply.equals("ok"))
+            throw new DroneNotConnectedException(droneAddress, dronePort);
 
         return true;
     }
